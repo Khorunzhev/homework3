@@ -29,8 +29,3 @@ mongock:
   change-logs-scan-package:
     - ru.otus.example.springbatch.chandgelogs
 
-app:
-  ages-count-to-add: 1
-  input-file: entries.csv
-  output-file: output.dat
-
