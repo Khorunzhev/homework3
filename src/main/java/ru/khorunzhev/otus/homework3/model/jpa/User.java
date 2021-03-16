@@ -24,8 +24,4 @@ public class User {
 
     private String password;
 
-    @Enumerated(value = EnumType.STRING)
-    @Column
-    private ru.khorunzhev.otus.homework2.model.Role role;
-
 }

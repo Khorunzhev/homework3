@@ -10,6 +10,8 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.data.MongoItemReader;
+import org.springframework.batch.item.data.builder.MongoItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
@@ -18,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.mongodb.core.query.Query;
+import ru.khorunzhev.otus.homework3.model.jpa.User;
 
 import java.util.List;
 
@@ -40,34 +44,18 @@ public class JobConfig {
 
     @StepScope
     @Bean
-    public FlatFileItemReader<Use> reader() {
-        return new FlatFileItemReaderBuilder<Person>()
-                .name("personItemReader")
-                .resource(new FileSystemResource(inputFileName))
-
-                // Работа через lineMapper
-                .lineMapper((s, i) -> {
-                    String[] fieldsValues = s.split(",");
-                    return new Person(fieldsValues[0], Integer.parseInt(fieldsValues[1]));
-                })
-/*
-
-                // Работа через fieldSetMapper
-                .delimited()
-                .names("name", "age")
-                .fieldSetMapper(new BeanWrapperFieldSetMapper<>() {{
-                    setTargetType(Person.class);
-                }})
-*/
-
-
+    public MongoItemReader<User> reader() {
+        return new MongoItemReaderBuilder<User>()
+                .name("personMongoReader")
+                .template()
+                .targetType(User.class)
                 .build();
     }
 
     @StepScope
     @Bean
     public ItemProcessor processor(HappyBirthdayService happyBirthdayService) {
-        return (ItemProcessor<Person, Person>) happyBirthdayService::doHappyBirthday;
+        return (ItemProcessor<User, Person>) happyBirthdayService::doHappyBirthday;
     }
 
     @StepScope
