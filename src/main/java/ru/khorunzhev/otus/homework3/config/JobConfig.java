@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.khorunzhev.otus.homework3.model.jpa.User;
 
@@ -42,12 +43,15 @@ public class JobConfig {
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
+
     @StepScope
     @Bean
     public MongoItemReader<User> reader() {
         return new MongoItemReaderBuilder<User>()
                 .name("personMongoReader")
-                .template()
+                .template(mongoTemplate)
                 .targetType(User.class)
                 .build();
     }
