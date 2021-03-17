@@ -106,7 +106,7 @@ public class JobConfig {
     }
 
     @Bean
-    public Step step1(FlatFileItemWriter writer, ItemReader reader, ItemProcessor itemProcessor) {
+    public Step step1(JpaItemWriter writer, MongoItemReader reader, ItemProcessor itemProcessor) {
         return stepBuilderFactory.get("step1")
                 .chunk(CHUNK_SIZE)
                 .reader(reader)
