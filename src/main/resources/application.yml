@@ -19,13 +19,12 @@ spring:
 
   data:
     mongodb:
-      #uri: mongodb://localhost
-      host: localhost
+      host: 127.0.0.1
       port: 0
-      database: SpringBatchExampleDB
+      database: library
 
 mongock:
   runner-type: InitializingBean
   change-logs-scan-package:
-    - ru.otus.example.springbatch.chandgelogs
+    - ru.khorunzhev.otus.homework3.mongock
 

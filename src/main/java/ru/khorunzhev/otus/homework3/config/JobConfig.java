@@ -11,7 +11,15 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.data.MongoItemReader;
+import org.springframework.batch.item.data.MongoItemWriter;
 import org.springframework.batch.item.data.builder.MongoItemReaderBuilder;
+import org.springframework.batch.item.data.builder.MongoItemWriterBuilder;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.database.JpaCursorItemReader;
+import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
+import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
@@ -23,7 +31,11 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.khorunzhev.otus.homework3.model.jpa.User;
+import ru.khorunzhev.otus.homework3.service.TransformUserService;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -43,32 +55,33 @@ public class JobConfig {
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    MongoTemplate mongoTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @StepScope
     @Bean
-    public MongoItemReader<User> reader() {
-        return new MongoItemReaderBuilder<User>()
-                .name("personMongoReader")
+    public MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.User> reader(MongoTemplate mongoTemplate) {
+        return new MongoItemReaderBuilder<ru.khorunzhev.otus.homework3.model.mongo.User>()
+                .name("MongoReader")
                 .template(mongoTemplate)
-                .targetType(User.class)
+                .targetType(ru.khorunzhev.otus.homework3.model.mongo.User.class)
+                .jsonQuery("{}")
+                .sorts(new HashMap<>())
                 .build();
     }
 
     @StepScope
     @Bean
-    public ItemProcessor processor(HappyBirthdayService happyBirthdayService) {
-        return (ItemProcessor<User, Person>) happyBirthdayService::doHappyBirthday;
+    public ItemProcessor processor(TransformUserService transformUserService) {
+        return (ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.User, User>) transformUserService::transformUser;
     }
 
     @StepScope
     @Bean
-    public FlatFileItemWriter writer() {
-        return new FlatFileItemWriterBuilder<>()
-                .name("personItemWriter")
-                .resource(new FileSystemResource(outputFileName))
-                .lineAggregator(new DelimitedLineAggregator<>())
+    public JpaItemWriter<User> writer() {
+        return new JpaItemWriterBuilder<User>()
+                .entityManagerFactory(entityManager.getEntityManagerFactory())
+                .usePersist(true)
                 .build();
     }
 

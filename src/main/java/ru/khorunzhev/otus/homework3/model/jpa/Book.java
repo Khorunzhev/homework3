@@ -29,9 +29,9 @@ public class Book {
     private String title;
 
     @Fetch(FetchMode.JOIN)
-    @ManyToOne(targetEntity = ru.khorunzhev.otus.homework2.model.Author.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Author.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinColumn(name = "AUTHOR_ID")
-    private ru.khorunzhev.otus.homework2.model.Author author;
+    private Author author;
 
     @Fetch(FetchMode.JOIN)
     @ManyToOne(targetEntity = Genre.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
@@ -40,7 +40,7 @@ public class Book {
 
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 3)
-    @OneToMany(targetEntity = ru.khorunzhev.otus.homework2.model.Comment.class, mappedBy = "book", fetch = FetchType.LAZY)
-    private Set<ru.khorunzhev.otus.homework2.model.Comment> comment;
+    @OneToMany(targetEntity = Comment.class, mappedBy = "book", fetch = FetchType.LAZY)
+    private Set<Comment> comment;
 
 }

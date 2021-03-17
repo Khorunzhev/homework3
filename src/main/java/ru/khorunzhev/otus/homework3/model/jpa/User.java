@@ -1,15 +1,12 @@
 package ru.khorunzhev.otus.homework3.model.jpa;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(access = AccessLevel.PUBLIC)
 @Entity
 @Data
 @Table(name = "USERS")

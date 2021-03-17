@@ -4,16 +4,20 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Data
+@NoArgsConstructor
 @Builder
-@Document(value = "book")
-public class User {
+@Data
+@Document(value = "author")
+@ToString(exclude = "id")
+public class Author {
 
     @Id
     private String id;
+    private String fullName;
 
-    private String username;
-    private String password;
+    public Author(String fullName) {
+        this.fullName = fullName;
+    }
+
 }

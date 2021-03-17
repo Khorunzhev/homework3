@@ -6,14 +6,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-@Document(value = "book")
-public class User {
+@Data
+@ToString(exclude = "id")
+@Document(value = "genre")
+public class Genre {
 
     @Id
     private String id;
+    private String name;
 
-    private String username;
-    private String password;
+    public Genre (String name) {
+        this.name = name;
+    }
+
 }
