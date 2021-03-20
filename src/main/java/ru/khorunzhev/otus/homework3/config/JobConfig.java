@@ -30,7 +30,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import ru.khorunzhev.otus.homework3.model.jpa.Book;
 import ru.khorunzhev.otus.homework3.model.jpa.User;
+import ru.khorunzhev.otus.homework3.service.TransformBookService;
 import ru.khorunzhev.otus.homework3.service.TransformUserService;
 
 import javax.persistence.EntityManager;
@@ -45,9 +47,7 @@ public class JobConfig {
     private static final int CHUNK_SIZE = 5;
     private final Logger logger = LoggerFactory.getLogger("Batch");
 
-    public static final String OUTPUT_FILE_NAME = "outputFileName";
-    public static final String INPUT_FILE_NAME = "inputFileName";
-    public static final String IMPORT_USER_JOB_NAME = "importUserJob";
+    public static final String IMPORT_USER_JOB_NAME = "migrateLibraryJob";
 
     @Autowired
     private JobBuilderFactory jobBuilderFactory;
@@ -86,11 +86,11 @@ public class JobConfig {
     }
 
     @Bean
-    public Job importUserJob(Step step1) {
+    public Job importUserJob(Step migrateUserStep, Step migrateBookStep) {
         return jobBuilderFactory.get(IMPORT_USER_JOB_NAME)
                 .incrementer(new RunIdIncrementer())
-                .flow(step1)
-                .end()
+                .start(migrateUserStep)
+                .next(migrateBookStep)
                 .listener(new JobExecutionListener() {
                     @Override
                     public void beforeJob(JobExecution jobExecution) {
@@ -106,26 +106,27 @@ public class JobConfig {
     }
 
     @Bean
-    public Step step1(JpaItemWriter writer, MongoItemReader reader, ItemProcessor itemProcessor) {
-        return stepBuilderFactory.get("step1")
-                .chunk(CHUNK_SIZE)
-                .reader(reader)
+    public Step migrateUserStep(JpaItemWriter<User> userWriter,
+                                MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.User> userReader,
+                                ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.User, User> itemProcessor) {
+        return stepBuilderFactory.get("migrateUserStep")
+                .<ru.khorunzhev.otus.homework3.model.mongo.User, User>chunk(CHUNK_SIZE)
+                .reader(userReader)
                 .processor(itemProcessor)
-                .writer(writer)
-                .listener(new ItemReadListener() {
+                .writer(userWriter)
+                .listener(new ItemReadListener<ru.khorunzhev.otus.homework3.model.mongo.User>() {
                     public void beforeRead() {
                         logger.info("Начало чтения");
                     }
-
-                    public void afterRead(Object o) {
-                        logger.info("Конец чтения");
+                    public void afterRead(ru.khorunzhev.otus.homework3.model.mongo.User o) {
+                        logger.info("Конец чтения " + o);
                     }
 
                     public void onReadError(Exception e) {
                         logger.info("Ошибка чтения");
                     }
                 })
-                .listener(new ItemWriteListener() {
+                .listener(new ItemWriteListener<User>() {
                     public void beforeWrite(List list) {
                         logger.info("Начало записи");
                     }
@@ -138,33 +139,71 @@ public class JobConfig {
                         logger.info("Ошибка записи");
                     }
                 })
-                .listener(new ItemProcessListener() {
-                    public void beforeProcess(Object o) {
-                        logger.info("Начало обработки");
+                .build();
+    }
+
+
+    @StepScope
+    @Bean
+    public MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.Book> bookReader(MongoTemplate mongoTemplate) {
+        return new MongoItemReaderBuilder<ru.khorunzhev.otus.homework3.model.mongo.Book>()
+                .name("MongoReader")
+                .template(mongoTemplate)
+                .targetType(ru.khorunzhev.otus.homework3.model.mongo.Book.class)
+                .jsonQuery("{}")
+                .sorts(new HashMap<>())
+                .build();
+    }
+
+    @StepScope
+    @Bean
+    public ItemProcessor bookItemProcessor(TransformBookService transformBookService) {
+        return (ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.Book, Book>) transformBookService::transformBook;
+    }
+
+    @StepScope
+    @Bean
+    public JpaItemWriter<Book> bookWriter() {
+        return new JpaItemWriterBuilder<Book>()
+                .entityManagerFactory(entityManager.getEntityManagerFactory())
+                .usePersist(true)
+                .build();
+    }
+
+    @Bean
+    public Step migrateBookStep(JpaItemWriter<Book> bookWriter,
+                                MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.Book> bookReader,
+                                ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.Book, Book> bookItemProcessor) {
+        return stepBuilderFactory.get("migrateUserStep")
+                .<ru.khorunzhev.otus.homework3.model.mongo.Book, Book>chunk(CHUNK_SIZE)
+                .reader(bookReader)
+                .processor(bookItemProcessor)
+                .writer(bookWriter)
+                .listener(new ItemReadListener<ru.khorunzhev.otus.homework3.model.mongo.Book>() {
+                    public void beforeRead() {
+                        logger.info("Начало чтения");
+                    }
+                    public void afterRead(ru.khorunzhev.otus.homework3.model.mongo.Book o) {
+                        logger.info("Конец чтения " + o);
                     }
 
-                    public void afterProcess(Object o, Object o2) {
-                        logger.info("Конец обработки");
-                    }
-
-                    public void onProcessError(Object o, Exception e) {
-                        logger.info("Ошбка обработки");
+                    public void onReadError(Exception e) {
+                        logger.info("Ошибка чтения");
                     }
                 })
-                .listener(new ChunkListener() {
-                    public void beforeChunk(ChunkContext chunkContext) {
-                        logger.info("Начало пачки");
+                .listener(new ItemWriteListener<Book>() {
+                    public void beforeWrite(List list) {
+                        logger.info("Начало записи");
                     }
 
-                    public void afterChunk(ChunkContext chunkContext) {
-                        logger.info("Конец пачки");
+                    public void afterWrite(List list) {
+                        logger.info("Конец записи");
                     }
 
-                    public void afterChunkError(ChunkContext chunkContext) {
-                        logger.info("Ошибка пачки");
+                    public void onWriteError(Exception e, List list) {
+                        logger.info("Ошибка записи");
                     }
                 })
-//                .taskExecutor(new SimpleAsyncTaskExecutor())
                 .build();
     }
 }
