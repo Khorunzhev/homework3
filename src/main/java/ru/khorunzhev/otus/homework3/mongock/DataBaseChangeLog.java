@@ -6,7 +6,6 @@ import com.github.cloudyrock.mongock.driver.mongodb.springdata.v3.decorator.impl
 import com.mongodb.client.MongoDatabase;
 import ru.khorunzhev.otus.homework3.model.mongo.*;
 
-import java.util.List;
 
 @ChangeLog(order = "001")
 public class DataBaseChangeLog {
@@ -30,11 +29,11 @@ public class DataBaseChangeLog {
         Genre genreDetective = new Genre("Детектив");
         template.save(genreDetective);
 
-        Comment comment = new Comment("Коммент");
-        template.save(comment);
+        Book book1 = new Book("Name1", authorIvanov, genreDetective);
+        template.save(book1);
 
-        Book book = new Book("Name1", authorIvanov, genreDetective, List.of(comment));
-        template.save(book);
+        Book book2 = new Book("Name2", authorIvanov, genreDetective);
+        template.save(book2);
 
         User user = new User("IvanLogin", "$2a$10$R7NIY9xaunw5K6IisHZxaOFqCCJAo4d1U7nKTEDEC.4z4MVZqGyO.");
         template.save(user);

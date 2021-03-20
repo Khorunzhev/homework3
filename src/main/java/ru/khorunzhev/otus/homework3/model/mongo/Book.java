@@ -31,11 +31,4 @@ public class Book {
         this.author = author;
     }
 
-    public Book(String id, String title, Author author, Genre genre) {
-        this.id = id;
-        this.title = title;
-        this.genre = genre;
-        this.author = author;
-    }
-
 }
