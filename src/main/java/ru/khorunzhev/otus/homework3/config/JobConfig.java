@@ -72,7 +72,7 @@ public class JobConfig {
 
     @StepScope
     @Bean
-    public ItemProcessor processor(TransformUserService transformUserService) {
+    public ItemProcessor itemUserProcessor(TransformUserService transformUserService) {
         return (ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.User, User>) transformUserService::transformUser;
     }
 
@@ -108,11 +108,11 @@ public class JobConfig {
     @Bean
     public Step migrateUserStep(JpaItemWriter<User> userWriter,
                                 MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.User> userReader,
-                                ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.User, User> itemProcessor) {
+                                ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.User, User> itemUserProcessor) {
         return stepBuilderFactory.get("migrateUserStep")
                 .<ru.khorunzhev.otus.homework3.model.mongo.User, User>chunk(CHUNK_SIZE)
                 .reader(userReader)
-                .processor(itemProcessor)
+                .processor(itemUserProcessor)
                 .writer(userWriter)
                 .listener(new ItemReadListener<ru.khorunzhev.otus.homework3.model.mongo.User>() {
                     public void beforeRead() {
@@ -174,7 +174,7 @@ public class JobConfig {
     public Step migrateBookStep(JpaItemWriter<Book> bookWriter,
                                 MongoItemReader<ru.khorunzhev.otus.homework3.model.mongo.Book> bookReader,
                                 ItemProcessor<ru.khorunzhev.otus.homework3.model.mongo.Book, Book> bookItemProcessor) {
-        return stepBuilderFactory.get("migrateUserStep")
+        return stepBuilderFactory.get("migrateBookStep")
                 .<ru.khorunzhev.otus.homework3.model.mongo.Book, Book>chunk(CHUNK_SIZE)
                 .reader(bookReader)
                 .processor(bookItemProcessor)
