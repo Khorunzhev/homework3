@@ -12,8 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Entity
-@ToString(exclude = "comment")
-@EqualsAndHashCode(exclude = "comment")
 @Builder
 @Table(name = "BOOK")
 @NamedEntityGraph(name = "BOOK.authorAndGenre",
@@ -37,10 +35,5 @@ public class Book {
     @ManyToOne(targetEntity = Genre.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinColumn(name = "GENRE_ID")
     private Genre genre;
-
-    @Fetch(FetchMode.SELECT)
-    @BatchSize(size = 3)
-    @OneToMany(targetEntity = Comment.class, mappedBy = "book", fetch = FetchType.LAZY)
-    private Set<Comment> comment;
 
 }

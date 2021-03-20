@@ -25,8 +25,6 @@ public class Book {
 
     private Genre genre;
 
-    private List<Comment> comments;
-
     public Book(String title, Author author, Genre genre) {
         this.title = title;
         this.genre = genre;
@@ -38,13 +36,6 @@ public class Book {
         this.title = title;
         this.genre = genre;
         this.author = author;
-    }
-
-    public Book(String title, Author author, Genre genre, List<Comment> comments) {
-        this.title = title;
-        this.genre = genre;
-        this.author = author;
-        this.comments = comments;
     }
 
 }
