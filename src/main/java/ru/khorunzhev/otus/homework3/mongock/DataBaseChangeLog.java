@@ -36,7 +36,7 @@ public class DataBaseChangeLog {
         Book book = new Book("Name1", authorIvanov, genreDetective, List.of(comment));
         template.save(book);
 
-        User user = new User("$2a$10$R7NIY9xaunw5K6IisHZxaOFqCCJAo4d1U7nKTEDEC.4z4MVZqGyO.", "ADMIN");
+        User user = new User("IvanLogin", "$2a$10$R7NIY9xaunw5K6IisHZxaOFqCCJAo4d1U7nKTEDEC.4z4MVZqGyO.");
         template.save(user);
 
     }
