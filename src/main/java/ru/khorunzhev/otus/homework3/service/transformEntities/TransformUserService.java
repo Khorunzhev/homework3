@@ -1,4 +1,4 @@
-package ru.khorunzhev.otus.homework3.service;
+package ru.khorunzhev.otus.homework3.service.transformEntities;
 
 import org.springframework.stereotype.Service;
 import ru.khorunzhev.otus.homework3.model.jpa.User;
