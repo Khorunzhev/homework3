@@ -19,10 +19,10 @@ public class TransformBookService {
 
     private static final String MIGRATION_ERROR = "Сущность %s для установки связи с книгой не обнаружена";
 
-    AuthorMigrationIdRepository authorMigrationIdRepository;
-    GenreMigrationIdRepository genreMigrationIdRepository;
-    AuthorRepository authorRepository;
-    GenreRepository genreRepository;
+    private final AuthorMigrationIdRepository authorMigrationIdRepository;
+    private final GenreMigrationIdRepository genreMigrationIdRepository;
+    private final AuthorRepository authorRepository;
+    private final GenreRepository genreRepository;
 
     public Book transformBook(ru.khorunzhev.otus.homework3.model.mongo.Book mongoBook) {
 
