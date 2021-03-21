@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class TransformBookService {
 
+    private static final String MIGRATION_ERROR = "Сущность %s для установки связи с книгой не обнаружена";
+
     AuthorMigrationIdRepository authorMigrationIdRepository;
     GenreMigrationIdRepository genreMigrationIdRepository;
     AuthorRepository authorRepository;
@@ -24,11 +26,15 @@ public class TransformBookService {
 
     public Book transformBook(ru.khorunzhev.otus.homework3.model.mongo.Book mongoBook) {
 
-        AuthorMigrationId authorMigrationId = authorMigrationIdRepository.findByNoSqlId(mongoBook.getAuthor().getId()).get();
-        Author author = authorRepository.findById(authorMigrationId.getID()).get();
+        AuthorMigrationId authorMigrationId = authorMigrationIdRepository.findByNoSqlId(mongoBook.getAuthor().getId())
+                .orElseThrow(() -> new RuntimeException(String.format(MIGRATION_ERROR, AuthorMigrationId.class.getSimpleName())));
+        Author author = authorRepository.findById(authorMigrationId.getID())
+                .orElseThrow(() -> new RuntimeException(String.format(MIGRATION_ERROR, Author.class.getSimpleName())));
 
-        GenreMigrationId genreMigrationId = genreMigrationIdRepository.findByNoSqlId(mongoBook.getGenre().getId()).get();
-        Genre genre = genreRepository.findById(genreMigrationId.getID()).get();
+        GenreMigrationId genreMigrationId = genreMigrationIdRepository.findByNoSqlId(mongoBook.getGenre().getId())
+                .orElseThrow(() -> new RuntimeException(String.format(MIGRATION_ERROR, GenreMigrationId.class.getSimpleName())));
+        Genre genre = genreRepository.findById(genreMigrationId.getID())
+                .orElseThrow(() -> new RuntimeException(String.format(MIGRATION_ERROR, Genre.class.getSimpleName())));
 
         return Book.builder()
                 .title(mongoBook.getTitle())
